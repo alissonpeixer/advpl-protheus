@@ -2,3 +2,9 @@
 
 
 https://tdn.totvs.com/display/tec/AdvPL
+
+
+
+Notes:
+
+.AND. = &&
