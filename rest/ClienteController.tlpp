@@ -27,7 +27,7 @@ Method postCliente() Class ClienteController
   Private lAutoErrNoFile := .T.
   Private lMsHelpAuto :=.T.
   Private _cPath       	:= GetSrvProfString("Startpath","")
-	Private _cNomArqErro 	:= "WSR_CLIENTE.LOG"
+	Private _cNomArqErro 	:= "CLIENTE.LOG"
 
 
   oRest:setKeyHeaderResponse("Content-Type", "application/json")
@@ -84,10 +84,10 @@ TcQuery cQuery New Alias "QRY"
 dbSelectArea("QRY")
 
 
-While !QRY->(EOF()) //Enquando não for fim de arquivo
+While !QRY->(EOF()) //Enquando nÃ£o for fim de arquivo
      ret += RTRIM(QRY->USR_CODIGO)+";"
       QRY->(dbSkip()) //Anda 1 registro pra frente
 EndDo
 
-QRY->(dbCloseArea()) //Fecha a área de trabalho
+QRY->(dbCloseArea()) //Fecha a Ã¡rea de trabalho
 */
