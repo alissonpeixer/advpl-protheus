@@ -1,0 +1,93 @@
+#include "tlpp-rest.th"
+#include 'tlpp-core.th'
+
+Namespace TotvsDevelopers.Demo.Controllers
+
+Class ClienteController
+  Public Method New() Constructor
+
+  @post("/cliente")
+  Public Method postCliente()
+
+EndClass
+
+Method New() Class ClienteController
+Return
+
+
+Method postCliente() Class ClienteController
+
+
+  local cBody := oRest:getBodyRequest()
+  local jBody
+
+  local aVetor := {}
+
+  Private lMsErroAuto := .F.
+  Private lAutoErrNoFile := .T.
+  Private lMsHelpAuto :=.T.
+  Private _cPath       	:= GetSrvProfString("Startpath","")
+	Private _cNomArqErro 	:= "WSR_CLIENTE.LOG"
+
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+
+
+  if !empty(cBody)
+    jBody := JsonObject():new()
+    jBody:fromJson( cBody )
+
+    //cUser := jBody:GetJsonText("user")
+
+  else
+    oRest:setStatusCode(401)
+    oRest:setResponse("Erro: Dados nao encontrado")
+    BREAK
+  endif
+
+  //aadd(aVetor, {"A1_COD"   , jBody:getJSonObject("CA1COD")   , Nil})
+  aadd(aVetor, {"A1_NOME"  , jBody:getJSonObject("CA1NOME")  , Nil})
+  aadd(aVetor, {"A1_LOJA"  , jBody:getJSonObject("CA1LOJA")  , Nil})
+  aadd(aVetor, {"A1_NREDUZ", jBody:getJSonObject("CA1NREDUZ"), Nil})
+  aadd(aVetor, {"A1_TIPO"  , jBody:getJSonObject("CA1TIPO")  , Nil})
+  aadd(aVetor, {"A1_EST"   , jBody:getJSonObject("CA1EST")   , Nil})
+  aadd(aVetor, {"A1_END"   , jBody:getJSonObject("CA1END")   , Nil})
+  aadd(aVetor, {"A1_MUN"   , jBody:getJSonObject("CA1MUN")   , Nil})
+
+  MSExecAuto({|x,y| Mata030(x,y)},aVetor,3)
+
+  _aLogAuto := GetAutoGRLog()
+
+
+  If !empty(_aLogAuto)
+    oRest:setStatusCode(400)
+    oRest:setResponse(_aLogAuto[1])
+	ElseIf lMsErroAuto
+		MostraErro(_cPath,_cNomArqErro)
+        oRest:setStatusCode(400)
+    oRest:setResponse(MemoRead(_cPath+_cNomArqErro))
+		MsErase(_cNomArqErro)
+	endif
+
+Return
+
+
+
+/*
+
+// criando a query
+Local cQuery := "SELECT * FROM SYS_USR WHERE D_E_L_E_T_ = ' '"
+TcQuery cQuery New Alias "QRY"
+
+// acessando a area
+dbSelectArea("QRY")
+
+
+While !QRY->(EOF()) //Enquando não for fim de arquivo
+     ret += RTRIM(QRY->USR_CODIGO)+";"
+      QRY->(dbSkip()) //Anda 1 registro pra frente
+EndDo
+
+QRY->(dbCloseArea()) //Fecha a área de trabalho
+*/
