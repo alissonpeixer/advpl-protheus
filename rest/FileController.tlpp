@@ -1,0 +1,103 @@
+#include "TOTVS.ch"
+#include "fileio.ch"
+#include "tlpp-rest.th"
+#include 'tlpp-core.th'
+
+/*/{Protheus.doc} FileController
+@author alisson peixer
+@since 24/12/2023
+/*/
+
+Class FileController
+  Public Method New() Constructor
+
+  @get("/file")
+  public Method getDadosFile()
+
+  @post("/file")
+  Public Method postFile()
+
+EndClass
+
+Method New() Class FileController
+Return
+
+
+
+/*/{Protheus.doc} postFile:FileController
+@author alisson peixer
+@since 25/12/2023
+/*/
+Method postFile() Class FileController
+
+  local jBody
+  local jRet
+  local cBody := oRest:getBodyRequest()
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+  if !empty(cBody)
+    jBody := JsonObject():new()
+    jBody:fromJson(cBody)
+
+
+    jRet := JsonObject():new()
+
+    jRet["Success"] := jBody["Success"]
+    jRet["File"]    := jBody["Elements"][1]["UploadName"]
+  else
+    oRest:setStatusCode(401)
+    Return oRest:setResponse("Erro: Not Found")
+  endif
+
+
+
+  oRest:setResponse(jRet)
+Return
+
+
+
+/*/{Protheus.doc} methodName
+@author alisson peixer
+@since 25/12/2023
+/*/
+Method getDadosFile()  Class FileController
+  local _oReqQuery := oRest:getQueryRequest()
+  local _cPath := "/http-root/HTTPREST/HTTPENV/"
+  local cLine  := ""
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+  if Empty(_oReqQuery:getJSonObject("CFILENAME"))
+    oRest:setStatusCode(403)
+    return oRest:setResponse("Erro: Not Found File ID")
+  else
+    _cPath += AllTrim(_oReqQuery:getJSonObject("CFILENAME"))
+  endif
+
+
+  if !Empty(_cPath)
+
+    oFile := FwFileReader():New(_cPath)
+
+    if (oFile:Open())
+      while (oFile:hasLine())
+        cLine += oFile:GetLine()
+      end
+      oFile:Close()
+    else
+      oRest:setStatusCode(401)
+      Return oRest:setResponse("Erro: Leitura")
+    endif
+
+    oFile:Close()
+    FErase(_cPath)
+
+	else
+    oRest:setStatusCode(401)
+    Return oRest:setResponse("Erro: Not Found")
+	endif
+
+  oRest:setStatusCode(200)
+  oRest:setResponse(cLine)
+Return

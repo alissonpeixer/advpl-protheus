@@ -1,0 +1,24 @@
+#INCLUDE 'TOTVS.CH'
+#INCLUDE 'PROTHEUS.CH'
+#INCLUDE 'TOPCONN.CH'
+
+Class Utils
+    Public Method New() Constructor
+
+    public Method RunQuery()
+
+EndClass
+
+
+Method New() Class Utils
+Return
+
+
+
+Method RunQuery(cQuery, _tAlias) Class Utils
+
+    TcQuery cQuery New Alias "TPM"
+    dbSelectArea("TPM")
+    _tAlias := ("TPM")
+
+Return("TPM")

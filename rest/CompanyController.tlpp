@@ -1,0 +1,107 @@
+#include "tlpp-rest.th"
+#include 'tlpp-core.th'
+
+#INCLUDE 'PROTHEUS.CH'
+#INCLUDE 'TOPCONN.CH'
+
+Namespace TotvsDevelopers.Demo.Controllers
+
+Class CompanyController from Utils
+  Public Method New() Constructor
+
+  @get("/company")
+  Public Method getListaCompany()
+
+EndClass
+
+Method New() Class CompanyController
+Return
+
+
+
+Method getListaCompany(_lUnico) Class CompanyController
+
+  default _lUnico := .f.
+
+  local _aIten
+  local cQuery
+  local _aItens    := {}
+  local _tAlias
+  local _aRet      := JsonObject():New()
+//   local _oReqPath  := oRest:getPathParamsRequest()
+//   local _oReqQuery := oRest:getQueryRequest()
+
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+  cQuery := " SELECT M0_CODIGO CM0CODIGO, M0_CODFIL CM0CODFIL, M0_FILIAL CM0FILIAL, M0_NOME CM0NOME  "
+  cQuery += "   FROM SYS_COMPANY"
+  cQuery += " WHERE D_E_L_E_T_ = '' "
+
+
+  ::RunQuery(cQuery, @_tAlias)
+
+  While !EOF() //Enquando não for fim de arquivo
+    _aIten := JsonObject():new()
+
+    _aIten["CM0CODIGO"] := RTRIM((_tAlias)->CM0CODIGO)
+    _aIten["CM0CODFIL"] := RTRIM((_tAlias)->CM0CODFIL)
+    _aIten["CM0FILIAL"] := RTRIM((_tAlias)->CM0FILIAL)
+    _aIten["CM0NOME"] := RTRIM((_tAlias)->CM0NOME)
+
+
+    aAdd(_aItens,_aIten)
+
+    (_tAlias)->(dbSkip())
+  EndDo
+
+
+  (_tAlias)->(dbCloseArea())
+
+
+  _aRet["items"] := _aItens
+
+  oRest:setResponse(_aRet:ToJson())
+Return
+
+
+
+
+// User Function TcQuery()
+// Local cQuery := 'SELECT * FROM AGENDA'
+
+// tclink()
+
+// // Usando o comando TCQUERY
+// TCQUERY (cQuery) ALIAS QRY NEW
+// USE
+
+// // Usando o comando USE com a função TCGenQry()
+// USE (TcGenQry(,,cQuery)) ALIAS QRY EXCLUSIVE NEW VIA "TOPCONN"
+// USE
+
+// // Chamando diretamente a função DbUseArea()
+// // No final das contas, os comandos acima acabam sendo traduzidos
+// // internamente para as chamadas das funções abaixo:
+// DbUseArea( .T. , 'TOPCONN' , TcGenQry( ,, cQuery) , "QRY" , .T. , .T. )
+// DbCloseArea()
+
+// Return
+
+/*
+
+// criando a query
+Local cQuery := "SELECT * FROM SYS_USR WHERE D_E_L_E_T_ = ' '"
+TcQuery cQuery New Alias "QRY"
+
+// acessando a area
+dbSelectArea("QRY")
+
+
+While !QRY->(EOF()) //Enquando não for fim de arquivo
+     ret += RTRIM(QRY->USR_CODIGO)+";"
+      QRY->(dbSkip()) //Anda 1 registro pra frente
+EndDo
+
+QRY->(dbCloseArea()) //Fecha a área de trabalho
+*/

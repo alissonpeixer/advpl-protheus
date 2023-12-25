@@ -1,0 +1,195 @@
+#include "tlpp-rest.th"
+#include 'tlpp-core.th'
+
+#INCLUDE 'PROTHEUS.CH'
+#INCLUDE 'TOPCONN.CH'
+
+Namespace TotvsDevelopers.Demo.Controllers
+
+Class PaisController from Utils
+  Public Method New() Constructor
+
+  @get("/pais")
+  Public Method getListaPais()
+
+  @get("/pais/:CFILTER")
+  Public Method getPais()
+
+  @get("/estado")
+  Public Method getEstado()
+
+  @get("/municipio")
+  Public Method getMunicipio()
+
+EndClass
+
+Method New() Class PaisController
+Return
+
+
+
+Method getPais() Class PaisController
+  ::getListaPais(.t.)
+Return
+
+
+Method getListaPais(_lUnico) Class PaisController
+
+  default _lUnico := .f.
+
+  local _aIten
+  local cQuery
+  local _aItens    := {}
+  local _tAlias
+  local _aRet      := JsonObject():New()
+  local _oReqPath  := oRest:getPathParamsRequest()
+  local _oReqQuery := oRest:getQueryRequest()
+
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+  cQuery := " SELECT YA_CODGI CCODGI , YA_DESCR CDESCR , YA_SISEXP CSISEXP "
+  cQuery += "   FROM "+RetSqlName("SYA")
+  cQuery += " WHERE D_E_L_E_T_ = '' "
+  if _lUnico .or. !Empty(_oReqQuery:getJSonObject("filter"))
+    if !Empty(_oReqQuery:getJSonObject("filter"))
+      cQuery += "   AND ( YA_DESCR LIKE '%"+upper(_oReqQuery:getJSonObject("filter"))+"%'  OR YA_DESCR = '"+upper(_oReqQuery:getJSonObject("filter"))+"' )"
+    else
+      cQuery += "   AND ( YA_DESCR LIKE '%"+upper(_oReqPath['CFILTER'])+"%'  OR YA_DESCR = '"+upper(_oReqPath['CFILTER'])+"' OR YA_SISEXP = '"+_oReqPath['CFILTER']+"' )"
+    endif
+    cQuery += "     AND YA_SISEXP <> '' "
+  endif
+
+
+
+  ::RunQuery(cQuery, @_tAlias)
+
+  While !EOF() //Enquando não for fim de arquivo
+    _aIten := JsonObject():new()
+
+    _aIten["CCODGI"] := RTRIM((_tAlias)->CDESCR)
+    _aIten["CDESCR"] := RTRIM((_tAlias)->CDESCR)
+    _aIten["CSISEXP"] := RTRIM((_tAlias)->CSISEXP)
+
+    aAdd(_aItens,_aIten)
+
+    (_tAlias)->(dbSkip())
+  EndDo
+
+
+  (_tAlias)->(dbCloseArea())
+
+
+  _aRet["items"] := _aItens
+
+  oRest:setResponse(_aRet:ToJson())
+Return
+
+
+
+
+Method getEstado() Class PaisController
+
+  local _aIten
+  local cQuery
+  local _tAlias
+  local _aItens    := {}
+  local _aRet      := JsonObject():New()
+  local _oReqQuery := oRest:getQueryRequest()
+
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+  cQuery := " SELECT DISTINCT  CC2.CC2_EST C2EST,  SX5.X5_DESCRI X5DESCRI "
+  cQuery += "   FROM "+RetSqlName("CC2")+" CC2 "
+  cQuery += " INNER JOIN "+RetSqlName("SX5")+" SX5  "
+  cQuery += "   ON SX5.X5_CHAVE = CC2.CC2_EST "
+  cQuery += "   AND SX5.X5_TABELA = '12' "
+  cQuery += "   AND SX5.D_E_L_E_T_ = '' "
+  cQuery += " WHERE CC2.D_E_L_E_T_ = '' "
+
+  if !Empty(_oReqQuery:getJSonObject("filter"))
+    cQuery += " AND ( "
+    cQuery += "   SX5.X5_DESCRI LIKE '%"+upper(_oReqQuery:getJSonObject("filter"))+"%'"
+    cQuery += "   OR CC2.CC2_EST LIKE '%"+upper(_oReqQuery:getJSonObject("filter"))+"%'"
+    cQuery += " ) "
+  endif
+
+  cQuery += " ORDER BY CC2.CC2_EST ASC  "
+
+
+
+
+  ::RunQuery(cQuery, @_tAlias)
+
+  While !EOF() //Enquando não for fim de arquivo
+    _aIten := JsonObject():new()
+
+    _aIten["C2EST"] := RTRIM((_tAlias)->C2EST)
+    _aIten["X5DESCRI"] := RTRIM((_tAlias)->X5DESCRI)
+
+    aAdd(_aItens,_aIten)
+
+    (_tAlias)->(dbSkip())
+  EndDo
+
+
+  (_tAlias)->(dbCloseArea())
+
+
+  _aRet["items"] := _aItens
+
+  oRest:setResponse(_aRet:ToJson())
+Return
+
+
+Method getMunicipio() Class PaisController
+
+  local _aIten
+  local cQuery
+  local _tAlias
+  local _aItens    := {}
+  local _aRet      := JsonObject():New()
+  local _oReqQuery := oRest:getQueryRequest()
+
+
+  oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+  if !Empty(_oReqQuery:getJSonObject("estado"))
+
+    cQuery := " SELECT DISTINCT  CC2_CODMUN CC2CODMUN, CC2_MUN CC2MUN, CC2_EST CC2EST"
+    cQuery += "   FROM "+RetSqlName("CC2")+" CC2 "
+    cQuery += " WHERE CC2.D_E_L_E_T_ = '' "
+    cQuery += "   AND CC2.CC2_EST = '"+Upper(_oReqQuery:getJSonObject("estado"))+"' "
+    if !Empty(_oReqQuery:getJSonObject("filter"))
+      cQuery += " AND   CC2.CC2_MUN LIKE '%"+upper(_oReqQuery:getJSonObject("filter"))+"%'"
+    endif
+    cQuery += " ORDER BY CC2.CC2_MUN ASC  "
+
+    ::RunQuery(cQuery, @_tAlias)
+
+    While !EOF() //Enquando não for fim de arquivo
+      _aIten := JsonObject():new()
+
+      _aIten["CC2CODMUN"] := RTRIM((_tAlias)->CC2CODMUN)
+      _aIten["CC2MUN"] := RTRIM((_tAlias)->CC2MUN)
+      _aIten["CC2EST"] := RTRIM((_tAlias)->CC2EST)
+
+      aAdd(_aItens,_aIten)
+
+      (_tAlias)->(dbSkip())
+    EndDo
+
+
+    (_tAlias)->(dbCloseArea())
+
+
+    _aRet["items"] := _aItens
+
+  endif
+
+
+
+  oRest:setResponse(_aRet:ToJson())
+Return
+
