@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Includes AdvPL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .card-include:hover { transform: translateY(-2px); transition: all 0.2s; }
+        .highlight { background-color: #fef08a; padding: 0 2px; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+
+    <header class="bg-slate-900 text-white py-12 px-4 shadow-lg">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">
+                <i class="fas fa-code-branch text-blue-400 mr-3"></i>Principais Includes AdvPL
+            </h1>
+            <p class="text-slate-300 text-lg max-w-2xl">
+                Guia prático sobre os arquivos <span class="text-blue-300 font-mono">*.ch</span> essenciais para o desenvolvimento no ecossistema Protheus.
+            </p>
+        </div>
+    </header>
+
+    <section class="max-w-5xl mx-auto -mt-8 px-4">
+        <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Buscar include (ex: TOTVS, Mail, MVC)..." 
+                    class="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-lg"
+                >
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4 text-sm text-gray-500">
+                <span>Sugestões:</span>
+                <button onclick="filterBy('TOTVS.ch')" class="hover:text-blue-600 underline">TOTVS.ch</button>
+                <button onclick="filterBy('MVC')" class="hover:text-blue-600 underline">MVC</button>
+                <button onclick="filterBy('Relatórios')" class="hover:text-blue-600 underline">Relatórios</button>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-5xl mx-auto py-12 px-4">
+        <div id="includesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+
+        <div id="noResults" class="hidden text-center py-20">
+            <i class="fas fa-search-minus text-4xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500">Nenhuma include encontrada com esse termo.</p>
+        </div>
+
+        <footer class="mt-16 pt-8 border-t border-gray-200">
+            <h3 class="text-xl font-bold mb-4">Links Úteis & Referências</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <a href="https://tdn.totvs.com/display/tec/ADV0100_CH_TOTVS_RDMAKE_PROTHEUS" target="_blank" class="flex items-center p-4 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    <i class="fas fa-external-link-alt text-blue-500 mr-3"></i>
+                    <div>
+                        <span class="block font-semibold">TDN - TOTVS</span>
+                        <span class="text-xs text-gray-500">Documentação oficial sobre Includes</span>
+                    </div>
+                </a>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        const includes = [
+            { name: "TOTVS.ch", desc: "Include padrão para as customizações atuais. Carrega as outras essenciais em sua arquitetura.", category: "Essencial" },
+            { name: "Protheus.ch", desc: "Include padrão do Protheus antigo. Atualmente recomenda-se utilizar a TOTVS.ch.", category: "Essencial" },
+            { name: "FWMVCDef.ch", desc: "Repleta de recursos e constantes para criação de fontes em arquitetura MVC.", category: "Desenvolvimento" },
+            { name: "TopConn.ch", desc: "Mantém recursos para conexões via Top Connect, como a função TCQuery().", category: "Banco de Dados" },
+            { name: "ApWebSrv.ch", desc: "Utilizada para o consumo e criação de WebServices.", category: "Integração" },
+            { name: "TbiCode.ch / TbiConn.ch", desc: "Comumente usadas para fazer integrações entre sistemas Protheus.", category: "Integração" },
+            { name: "FWPrintSetup.ch", desc: "Provê recursos para criação de relatórios gráficos utilizando a classe FWMSPrinter().", category: "Relatórios" },
+            { name: "RPTDef.ch", desc: "Disponibiliza recursos para relatórios padrão do Protheus.", category: "Relatórios" },
+            { name: "FileIO.ch", desc: "Controle de input/output de arquivos. (Substituível por FWFileWriter/Reader + TOTVS.ch)", category: "Arquivos" },
+            { name: "XMLxFun.ch", desc: "Recursos para integração com arquivos XML, como a função XMLDelNode().", category: "Integração" },
+            { name: "Colors.ch", desc: "Constantes de cores pré-definidas (CLR_HRED, etc). Sugere-se o uso de RGB() hoje.", category: "Interface" },
+            { name: "Font.ch", desc: "Manipulação de fontes. (Substituível por TFont() + TOTVS.ch)", category: "Interface" },
+            { name: "Ap5Mail.ch", desc: "Antiga para disparo de e-mails. Hoje usa-se TMailMessage() + TOTVS.ch.", category: "Legado" },
+            { name: "ApWizard.ch", desc: "Criação de telas formato Wizard. (Substituível por FWWizardControl + TOTVS.ch)", category: "Legado" },
+            { name: "ParmType.ch", desc: "Tipagem de parâmetros. Atualmente substituído pelo prefixo Default na recepção.", category: "Desenvolvimento" },
+            { name: "RWMake.ch", desc: "Recursos para montagem de tela antigos. Antecede a Protheus.ch.", category: "Legado" },
+            { name: "PonCalen.ch", desc: "Include relacionada especificamente ao módulo de Ponto Eletrônico.", category: "Específico" }
+        ];
+
+        const grid = document.getElementById('includesGrid');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+
+        function renderIncludes(filter = '') {
+            grid.innerHTML = '';
+            const filtered = includes.filter(inc => 
+                inc.name.toLowerCase().includes(filter.toLowerCase()) || 
+                inc.desc.toLowerCase().includes(filter.toLowerCase()) ||
+                inc.category.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                filtered.forEach(inc => {
+                    const card = `
+                        <div class="card-include bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-mono text-blue-600 font-bold text-lg">${inc.name}</h3>
+                                    <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded uppercase font-semibold">${inc.category}</span>
+                                </div>
+                                <p class="text-gray-600 text-sm leading-relaxed">${inc.desc}</p>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => renderIncludes(e.target.value));
+
+        function filterBy(term) {
+            searchInput.value = term;
+            renderIncludes(term);
+        }
+
+        // Inicializar
+        renderIncludes();
+    </script>
+</body>
+</html>
